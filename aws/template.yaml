@@ -1,0 +1,162 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Description: Insert description here
+
+Globals:
+  Function:
+    Runtime: nodejs8.10
+    Timeout: 60
+
+Parameters:
+  Stage:
+    Type: String
+    Default: local
+    Description: Parameterize the stage of the deployment
+
+Resources:
+  ParkingAccessStateMachine:
+    Type: "AWS::StepFunctions::StateMachine"
+    Properties:
+      StateMachineName: serverless-showdown-state-machine
+      DefinitionString: !Sub |
+                        {
+                          "Comment": "AWS Step Functions Example",
+                          "StartAt": "FindMatchingLicensePlate",
+                          "Version": "1.0",
+                          "States": {
+                            "FindMatchingLicensePlate": {
+                              "Type": "Task",
+                              "Resource": "${FindMatchingLicensePlate.Arn}",
+                              "End": true
+                            }
+                          }
+                        }
+      RoleArn: !GetAtt 'RoleParkingAccessStateMachine.Arn'
+  RequestCarEntry:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub "pg-requestcarentry-${Stage}"
+      Handler: request-car-entry.handle
+      CodeUri: dist/
+      Description: FaaS handler for requesting a car entry
+      MemorySize: 128
+      ReservedConcurrentExecutions: 20
+      Events:
+        PostCarRequest:
+          Type: Api
+          Properties:
+            Path: /parking-garage/{garageId}/occupy-space
+            Method: post
+  FindMatchingLicensePlate:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub "pg-findmatchinglicenseplate-${Stage}"
+      Handler: find-matching-license-plate.handle
+      CodeUri: dist/
+      Description: FaaS handler for requesting a car entry
+      MemorySize: 128
+      ReservedConcurrentExecutions: 20
+      Environment:
+        Variables:
+          LICENSE_PLATE_TABLE_NAME: !Ref 'LicensePlateRepository'
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "dynamoDb:Query"
+              Resource:
+                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/LicensePlateRepository*'
+  ConfirmAppointment:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub "pg-confirmappointment-${Stage}"
+      Handler: confirm-appointment.handle
+      CodeUri: dist/
+      Description: FaaS handler for requesting a car entry
+      MemorySize: 128
+      ReservedConcurrentExecutions: 20
+      Environment:
+        Variables:
+          PARKING_GARAGE_TABLE_NAME: !Ref 'ParkingGarageRepository'
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "dynamoDb:PutItem"
+                - "dynamoDb:Query"
+              Resource:
+                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepository*'
+  ConfirmEmployee:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub "pg-confirmemployee-${Stage}"
+      Handler: confirm-employee.handle
+      CodeUri: dist/
+      Description: FaaS handler for requesting a car entry
+      MemorySize: 128
+      ReservedConcurrentExecutions: 20
+      Environment:
+        Variables:
+          PARKING_GARAGE_TABLE_NAME: !Ref 'ParkingGarageRepository'
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "dynamoDb:PutItem"
+                - "dynamoDb:Query"
+              Resource:
+                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepository*'
+  LicensePlateRepository:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: !Sub "LicensePlateRepository-${Stage}"
+      AttributeDefinitions:
+        - AttributeName: license
+          AttributeType: S
+      KeySchema:
+        - AttributeName: license
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  ParkingGarageRepository:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: !Sub "ParkingGarageRepository-${Stage}"
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  RoleParkingAccessStateMachine:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: !Sub 'states.${AWS::Region}.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: lambda
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: 'lambda:InvokeFunction'
+                Resource:
+                  - !GetAtt 'FindMatchingLicensePlate.Arn'
+                  - !GetAtt 'ConfirmAppointment.Arn'
+                  - !GetAtt 'ConfirmEmployee.Arn'
+Outputs:
+  ParkingGarageApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/parking-garage/"
