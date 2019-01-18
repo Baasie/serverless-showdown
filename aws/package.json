@@ -1,5 +1,5 @@
 {
-  "name": "serverless-faas-function-chaining-js",
+  "name": "serverless-showdown-aws",
   "version": "1.0.0",
   "description": "Example to use AWS lambda function chaining",
   "main": "index.js",
