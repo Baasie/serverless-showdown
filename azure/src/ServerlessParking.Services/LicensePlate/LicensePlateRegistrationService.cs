@@ -16,14 +16,18 @@ namespace ServerlessParking.Services.LicensePlate
 
         public async Task<LicensePlateRegistration> GetRegistrationForAppointmentAsync(string licensePlateNumber)
         {
-            var licensePlate = await _repository.GetByTypeAndNumberAsync(LicensePlateType.Appointment.ToString("G"), licensePlateNumber);
+            var licensePlate = await _repository.GetByTypeAndNumberAsync(
+                LicensePlateType.Appointment.ToString("G"), 
+                licensePlateNumber);
 
             return licensePlate;
         }
 
         public async Task<LicensePlateRegistration> GetRegistrationForEmployeeAsync(string licensePlateNumber)
         {
-            var licensePlate = await _repository.GetByTypeAndNumberAsync(LicensePlateType.Employee.ToString("G"), licensePlateNumber);
+            var licensePlate = await _repository.GetByTypeAndNumberAsync(
+                LicensePlateType.Employee.ToString("G"),
+                licensePlateNumber);
 
             return licensePlate;
         }

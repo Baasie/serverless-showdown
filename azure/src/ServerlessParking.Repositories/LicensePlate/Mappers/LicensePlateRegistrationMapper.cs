@@ -12,8 +12,8 @@ namespace ServerlessParking.Repositories.LicensePlate.Mappers
             {
                 ContactPerson = entity.ContactPerson,
                 Name = entity.Name,
-                Number = entity.Number,
-                Type = Enum.TryParse(entity.Type, out LicensePlateType type) ? type : LicensePlateType.Unknown
+                Number = entity.RowKey,
+                Type = Enum.TryParse(entity.PartitionKey, out LicensePlateType type) ? type : LicensePlateType.Unknown
             };
         }
 
@@ -23,8 +23,6 @@ namespace ServerlessParking.Repositories.LicensePlate.Mappers
             {
                 ContactPerson = registration.ContactPerson,
                 Name = registration.Name,
-                Number = registration.Number,
-                Type = registration.Type.ToString("G"),
                 PartitionKey = registration.Type.ToString("G"),
                 RowKey = registration.Number
             };

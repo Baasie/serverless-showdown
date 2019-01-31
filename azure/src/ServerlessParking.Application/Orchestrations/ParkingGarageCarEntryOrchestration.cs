@@ -28,7 +28,7 @@ namespace ServerlessParking.Application.Orchestrations
             }
 
             var request = context.GetInput<ParkingOrchestrationRequest>();
-
+           
             var licensePlateResult = await context.CallActivityAsync<LicensePlateRegistration>(
                 nameof(GetLicensePlateRegistration), 
                 request.LicensePlateNumber);
