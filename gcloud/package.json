@@ -1,0 +1,36 @@
+{
+  "name": "serverless-showdown-gcloud",
+  "version": "1.0.0",
+  "description": "Example to use AWS lambda function chaining",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "webpack",
+    "clean": "rimraf coverage .nyc_output dist .stryker-tmp target",
+    "lint": "tslint --config ./tslint.json --project ./tsconfig.json --format stylish",
+    "test": "jest",
+    "test:mutation": "stryker run"
+  },
+  "author": "Kenny Baas <kenny@baasie.com>",
+  "license": "ISC",
+  "dependencies": {
+    "moment": "^2.22.2",
+    "tiny-types": "^1.12.0",
+    "uuid": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.16.1",
+    "@types/jest": "^23.1.2",
+    "@types/node": "^10.3.6",
+    "@types/uuid": "^3.4.3",
+    "jest": "^23.4.2",
+    "rimraf": "^2.6.2",
+    "ts-jest": "^22.4.6",
+    "ts-loader": "4.4.2",
+    "tslint": "5.9.1",
+    "typescript": "3.0.1",
+    "webpack": "4.16.5",
+    "webpack-cli": "^3.1.0",
+    "webpack-glob-entry": "^2.1.1"
+  }
+}
