@@ -1,6 +1,6 @@
 import {Callback, Context} from "aws-lambda";
 import {LicensePlateService} from "./license-plate-service";
-import {LicensePlateType} from "../domain/license-plate";
+import {LicensePlateType} from "../domain/license-plate-registration";
 import {AppointmentLicensePlateMatched, EmployeeLicensePlateMatched, NoLicensePlateMatched} from "../domain/events";
 
 export function handle(event, context: Context, callback: Callback) {

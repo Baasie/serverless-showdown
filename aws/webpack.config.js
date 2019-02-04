@@ -12,10 +12,12 @@ module.exports = {
     // Specify the entry point for our lambda's.
     // entry: entry(entry.basePath('src'), 'src/**/*.lambda.ts'),
     entry: {
-        'request-car-entry': './src/port.adapter/api/request-car-entry.lambda.ts',
+        'request-car-entry': './src/adapter/api/request-car-entry.lambda.ts',
         'confirm-appointment': './src/application/confirm-appointment.lambda.ts',
         'confirm-employee': './src/application/confirm-employee.lambda.ts',
-        'find-matching-license-plate': './src/application/find-matching-license-plate.lambda.ts'
+        'find-matching-license-plate': './src/application/find-matching-license-plate.lambda.ts',
+        'contact-notification': './src/adapter/contact-notification/contact-notification.lambda.ts',
+        'garage-gateway': './src/adapter/garage-gateway/garage-gateway.lambda.ts'
     },
 
     resolve: {

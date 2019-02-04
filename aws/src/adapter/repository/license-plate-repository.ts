@@ -1,5 +1,5 @@
 import {DynamoDB} from 'aws-sdk';
-import {LicensePlate, LicensePlateType} from "../../domain/license-plate";
+import {LicensePlateRegistration, LicensePlateType} from "../../domain/license-plate-registration";
 
 const documentClient: DynamoDB.DocumentClient = new DynamoDB.DocumentClient();
 
@@ -12,7 +12,7 @@ async function resolveTableName(): Promise<string> {
 
 export class LicensePlateRepository {
 
-    public static async findLicensePlate(license: string): Promise<LicensePlate> {
+    public static async findLicensePlate(license: string): Promise<LicensePlateRegistration> {
         console.log("findLicensePlate with "+license);
         let tableName = await resolveTableName();
         console.log("tableName: "+tableName);
@@ -32,10 +32,10 @@ export class LicensePlateRepository {
                 console.log("data: "+data.Items);
                 if (data.Items) {
                     console.log("data.items");
-                    return Promise.resolve(LicensePlate.fromJSON(data.Items.pop() as any));
+                    return Promise.resolve(LicensePlateRegistration.fromJSON(data.Items.pop() as any));
                 }
                 console.log("nothing...");
-                return Promise.resolve(new LicensePlate(license, LicensePlateType.UNKNOWN));
+                return Promise.resolve(new LicensePlateRegistration(license, LicensePlateType.UNKNOWN));
             },
             error => {
                 return Promise.reject(error.message)

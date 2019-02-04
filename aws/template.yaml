@@ -20,18 +20,84 @@ Resources:
     Properties:
       StateMachineName: serverless-showdown-state-machine
       DefinitionString: !Sub |
-                        {
-                          "Comment": "AWS Step Functions Example",
-                          "StartAt": "FindMatchingLicensePlate",
-                          "Version": "1.0",
-                          "States": {
-                            "FindMatchingLicensePlate": {
-                              "Type": "Task",
-                              "Resource": "${FindMatchingLicensePlate.Arn}",
-                              "End": true
-                            }
-                          }
-                        }
+        {
+          "Comment": "Car Request",
+          "StartAt": "FindMatchingLicensePlate",
+          "Version": "1.0",
+          "States": {
+            "FindMatchingLicensePlate": {
+              "Type": "Task",
+              "Resource": "${FindMatchingLicensePlate.Arn}",
+              "Next": "HandleParking"
+            },
+            "HandleParking": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.type",
+                  "StringEquals": "NoLicensePlateRegistered",
+                  "Next": "CallOfficeSupport"
+                },
+                {
+                  "Variable": "$.type",
+                  "StringEquals": "AppointmentLicensePlateRegistered",
+                  "Next": "ConfirmAppointment"
+                },
+                {
+                  "Variable": "$.type",
+                  "StringEquals": "EmployeeLicensePlatedRegistered",
+                  "Next": "ConfirmEmployee"
+                }
+              ]
+            },
+            "ConfirmAppointment": {
+              "Type": "Task",
+              "Resource": "${ConfirmAppointment.Arn}",
+              "Next": "HandleAppointment"
+            },
+            "HandleAppointment": {
+              "Type": "Parallel",
+              "End": true,
+              "Branches": [
+                {
+                  "StartAt": "HandleAppointmentGarageGateway",
+                  "States": {
+                    "HandleAppointmentGarageGateway": {
+                      "Type": "Task",
+                      "Resource": "${ConfirmEmployee.Arn}",
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "HandleAppointmentCallOfficeSupport",
+                  "States": {
+                    "HandleAppointmentCallOfficeSupport": {
+                      "Type": "Task",
+                      "Resource": "${ContactNotification.Arn}",
+                      "End": true
+                    }
+                  }
+                }
+              ]
+            },
+            "ConfirmEmployee": {
+              "Type": "Task",
+              "Resource": "${ConfirmEmployee.Arn}",
+              "Next": "GarageGateway"
+            },
+            "GarageGateway": {
+              "Type": "Task",
+              "Resource": "${ConfirmEmployee.Arn}",
+              "End": true
+            },
+            "CallOfficeSupport": {
+              "Type": "Task",
+              "Resource": "${ContactNotification.Arn}",
+              "End": true
+            }
+          }
+        }
       RoleArn: !GetAtt 'RoleParkingAccessStateMachine.Arn'
   RequestCarEntry:
     Type: 'AWS::Serverless::Function'
@@ -110,6 +176,24 @@ Resources:
                 - "dynamoDb:Query"
               Resource:
                 !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepository*'
+  ContactNotification:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub "pg-contactnotification-${Stage}"
+      Handler: contact-notification.handle
+      CodeUri: dist/
+      Description: FaaS handler for requesting a car entry
+      MemorySize: 128
+      ReservedConcurrentExecutions: 20
+  GarageGateway:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub "pg-garagegateway-${Stage}"
+      Handler: garage-gateway.handle
+      CodeUri: dist/
+      Description: FaaS handler for requesting a car entry
+      MemorySize: 128
+      ReservedConcurrentExecutions: 20
   LicensePlateRepository:
     Type: 'AWS::DynamoDB::Table'
     Properties:
@@ -156,6 +240,8 @@ Resources:
                   - !GetAtt 'FindMatchingLicensePlate.Arn'
                   - !GetAtt 'ConfirmAppointment.Arn'
                   - !GetAtt 'ConfirmEmployee.Arn'
+                  - !GetAtt 'ContactNotification.Arn'
+                  - !GetAtt 'GarageGateway.Arn'
 Outputs:
   ParkingGarageApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"

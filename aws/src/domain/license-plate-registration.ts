@@ -1,7 +1,7 @@
 import {Serialised, TinyType} from "tiny-types";
 
-export class LicensePlate extends TinyType {
-    public static fromJSON = (o: Serialised<LicensePlate>) => new LicensePlate(
+export class LicensePlateRegistration extends TinyType {
+    public static fromJSON = (o: Serialised<LicensePlateRegistration>) => new LicensePlateRegistration(
         o.license as string,
         LicensePlateType[o.type as string]
     );

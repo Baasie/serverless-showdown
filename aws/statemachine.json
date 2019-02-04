@@ -1,0 +1,78 @@
+{
+  "Comment": "Car Request",
+  "StartAt": "FindMatchingLicensePlate",
+  "Version": "1.0",
+  "States": {
+    "FindMatchingLicensePlate": {
+      "Type": "Task",
+      "Resource": "${FindMatchingLicensePlate.Arn}",
+      "Next": "HandleParking"
+    },
+    "HandleParking": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.type",
+          "StringEquals": "NoLicensePlateRegistered",
+          "Next": "CallOfficeSupport"
+        },
+        {
+          "Variable": "$.type",
+          "StringEquals": "AppointmentLicensePlateRegistered",
+          "Next": "ConfirmAppointment"
+        },
+        {
+          "Variable": "$.type",
+          "StringEquals": "EmployeeLicensePlatedRegistered",
+          "Next": "ConfirmEmployee"
+        }
+      ]
+    },
+    "ConfirmAppointment": {
+      "Type": "Task",
+      "Resource": "${ConfirmAppointment.Arn}",
+      "Next": "HandleAppointment"
+    },
+    "HandleAppointment": {
+      "Type": "Parallel",
+      "End": true,
+      "Branches": [
+        {
+          "StartAt": "HandleAppointmentGarageGateway",
+          "States": {
+            "HandleAppointmentGarageGateway": {
+              "Type": "Task",
+              "Resource": "${ConfirmEmployee.Arn}",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "HandleAppointmentCallOfficeSupport",
+          "States": {
+            "HandleAppointmentCallOfficeSupport": {
+              "Type": "Task",
+              "Resource": "${ContactNotification.Arn}",
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "ConfirmEmployee": {
+      "Type": "Task",
+      "Resource": "${ConfirmEmployee.Arn}",
+      "Next": "GarageGateway"
+    },
+    "GarageGateway": {
+      "Type": "Task",
+      "Resource": "${ConfirmEmployee.Arn}",
+      "End": true
+    },
+    "CallOfficeSupport": {
+      "Type": "Task",
+      "Resource": "${ContactNotification.Arn}",
+      "End": true
+    }
+  }
+}

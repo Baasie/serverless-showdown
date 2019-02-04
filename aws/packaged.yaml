@@ -1,0 +1,221 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Insert description here
+Globals:
+  Function:
+    Runtime: nodejs8.10
+    Timeout: 60
+Outputs:
+  ParkingGarageApi:
+    Description: API Gateway endpoint URL for Prod stage for Hello World function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/parking-garage/
+Parameters:
+  Stage:
+    Default: local
+    Description: Parameterize the stage of the deployment
+    Type: String
+Resources:
+  ConfirmAppointment:
+    Properties:
+      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      Description: FaaS handler for requesting a car entry
+      Environment:
+        Variables:
+          PARKING_GARAGE_TABLE_NAME:
+            Ref: ParkingGarageRepository
+      FunctionName:
+        Fn::Sub: pg-confirmappointment-${Stage}
+      Handler: confirm-appointment.handle
+      MemorySize: 128
+      Policies:
+      - Statement:
+        - Action:
+          - dynamoDb:PutItem
+          - dynamoDb:Query
+          Effect: Allow
+          Resource:
+            Fn::Sub: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepository*
+        Version: '2012-10-17'
+      ReservedConcurrentExecutions: 20
+    Type: AWS::Serverless::Function
+  ConfirmEmployee:
+    Properties:
+      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      Description: FaaS handler for requesting a car entry
+      Environment:
+        Variables:
+          PARKING_GARAGE_TABLE_NAME:
+            Ref: ParkingGarageRepository
+      FunctionName:
+        Fn::Sub: pg-confirmemployee-${Stage}
+      Handler: confirm-employee.handle
+      MemorySize: 128
+      Policies:
+      - Statement:
+        - Action:
+          - dynamoDb:PutItem
+          - dynamoDb:Query
+          Effect: Allow
+          Resource:
+            Fn::Sub: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepository*
+        Version: '2012-10-17'
+      ReservedConcurrentExecutions: 20
+    Type: AWS::Serverless::Function
+  ContactNotification:
+    Properties:
+      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      Description: FaaS handler for requesting a car entry
+      FunctionName:
+        Fn::Sub: pg-contactnotification-${Stage}
+      Handler: contact-notification.handle
+      MemorySize: 128
+      ReservedConcurrentExecutions: 20
+    Type: AWS::Serverless::Function
+  FindMatchingLicensePlate:
+    Properties:
+      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      Description: FaaS handler for requesting a car entry
+      Environment:
+        Variables:
+          LICENSE_PLATE_TABLE_NAME:
+            Ref: LicensePlateRepository
+      FunctionName:
+        Fn::Sub: pg-findmatchinglicenseplate-${Stage}
+      Handler: find-matching-license-plate.handle
+      MemorySize: 128
+      Policies:
+      - Statement:
+        - Action:
+          - dynamoDb:Query
+          Effect: Allow
+          Resource:
+            Fn::Sub: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/LicensePlateRepository*
+        Version: '2012-10-17'
+      ReservedConcurrentExecutions: 20
+    Type: AWS::Serverless::Function
+  GarageGateway:
+    Properties:
+      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      Description: FaaS handler for requesting a car entry
+      FunctionName:
+        Fn::Sub: pg-garagegateway-${Stage}
+      Handler: garage-gateway.handle
+      MemorySize: 128
+      ReservedConcurrentExecutions: 20
+    Type: AWS::Serverless::Function
+  LicensePlateRepository:
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: license
+        AttributeType: S
+      KeySchema:
+      - AttributeName: license
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName:
+        Fn::Sub: LicensePlateRepository-${Stage}
+    Type: AWS::DynamoDB::Table
+  ParkingAccessStateMachine:
+    Properties:
+      DefinitionString:
+        Fn::Sub: "{\n  \"Comment\": \"Car Request\",\n  \"StartAt\": \"FindMatchingLicensePlate\"\
+          ,\n  \"Version\": \"1.0\",\n  \"States\": {\n    \"FindMatchingLicensePlate\"\
+          : {\n      \"Type\": \"Task\",\n      \"Resource\": \"${FindMatchingLicensePlate.Arn}\"\
+          ,\n      \"Next\": \"HandleParking\"\n    },\n    \"HandleParking\": {\n\
+          \      \"Type\": \"Choice\",\n      \"Choices\": [\n        {\n        \
+          \  \"Variable\": \"$.type\",\n          \"StringEquals\": \"NoLicensePlateRegistered\"\
+          ,\n          \"Next\": \"CallOfficeSupport\"\n        },\n        {\n  \
+          \        \"Variable\": \"$.type\",\n          \"StringEquals\": \"AppointmentLicensePlateRegistered\"\
+          ,\n          \"Next\": \"ConfirmAppointment\"\n        },\n        {\n \
+          \         \"Variable\": \"$.type\",\n          \"StringEquals\": \"EmployeeLicensePlatedRegistered\"\
+          ,\n          \"Next\": \"ConfirmEmployee\"\n        }\n      ]\n    },\n\
+          \    \"ConfirmAppointment\": {\n      \"Type\": \"Task\",\n      \"Resource\"\
+          : \"${ConfirmAppointment.Arn}\",\n      \"Next\": \"HandleAppointment\"\n\
+          \    },\n    \"HandleAppointment\": {\n      \"Type\": \"Parallel\",\n \
+          \     \"End\": true,\n      \"Branches\": [\n        {\n          \"StartAt\"\
+          : \"HandleAppointmentGarageGateway\",\n          \"States\": {\n       \
+          \     \"HandleAppointmentGarageGateway\": {\n              \"Type\": \"\
+          Task\",\n              \"Resource\": \"${ConfirmEmployee.Arn}\",\n     \
+          \         \"End\": true\n            }\n          }\n        },\n      \
+          \  {\n          \"StartAt\": \"HandleAppointmentCallOfficeSupport\",\n \
+          \         \"States\": {\n            \"HandleAppointmentCallOfficeSupport\"\
+          : {\n              \"Type\": \"Task\",\n              \"Resource\": \"${ContactNotification.Arn}\"\
+          ,\n              \"End\": true\n            }\n          }\n        }\n\
+          \      ]\n    },\n    \"ConfirmEmployee\": {\n      \"Type\": \"Task\",\n\
+          \      \"Resource\": \"${ConfirmEmployee.Arn}\",\n      \"Next\": \"GarageGateway\"\
+          \n    },\n    \"GarageGateway\": {\n      \"Type\": \"Task\",\n      \"\
+          Resource\": \"${ConfirmEmployee.Arn}\",\n      \"End\": true\n    },\n \
+          \   \"CallOfficeSupport\": {\n      \"Type\": \"Task\",\n      \"Resource\"\
+          : \"${ContactNotification.Arn}\",\n      \"End\": true\n    }\n  }\n}\n"
+      RoleArn:
+        Fn::GetAtt:
+        - RoleParkingAccessStateMachine
+        - Arn
+      StateMachineName: serverless-showdown-state-machine
+    Type: AWS::StepFunctions::StateMachine
+  ParkingGarageRepository:
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName:
+        Fn::Sub: ParkingGarageRepository-${Stage}
+    Type: AWS::DynamoDB::Table
+  RequestCarEntry:
+    Properties:
+      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      Description: FaaS handler for requesting a car entry
+      Events:
+        PostCarRequest:
+          Properties:
+            Method: post
+            Path: /parking-garage/{garageId}/occupy-space
+          Type: Api
+      FunctionName:
+        Fn::Sub: pg-requestcarentry-${Stage}
+      Handler: request-car-entry.handle
+      MemorySize: 128
+      ReservedConcurrentExecutions: 20
+    Type: AWS::Serverless::Function
+  RoleParkingAccessStateMachine:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+              Fn::Sub: states.${AWS::Region}.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+            - Fn::GetAtt:
+              - FindMatchingLicensePlate
+              - Arn
+            - Fn::GetAtt:
+              - ConfirmAppointment
+              - Arn
+            - Fn::GetAtt:
+              - ConfirmEmployee
+              - Arn
+            - Fn::GetAtt:
+              - ContactNotification
+              - Arn
+            - Fn::GetAtt:
+              - GarageGateway
+              - Arn
+        PolicyName: lambda
+    Type: AWS::IAM::Role
+Transform: AWS::Serverless-2016-10-31

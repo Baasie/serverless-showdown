@@ -1,5 +1,5 @@
 import {ParkingGarage, UUID} from "../domain/parking-garage";
-import {ParkingGarageRepository} from "../port.adapter/repository/parking-garage-repository";
+import {ParkingGarageRepository} from "../adapter/repository/parking-garage-repository";
 
 export class AppointmentService {
     public static async occupyParkingSpace(parkingSpaceId: UUID): Promise<ParkingGarage> {
