@@ -28,11 +28,10 @@ namespace ServerlessParking.Application.Orchestrations
             }
 
             var request = context.GetInput<ParkingOrchestrationRequest>();
-
+           
             var licensePlateResult = await context.CallActivityAsync<LicensePlateRegistration>(
                 nameof(GetLicensePlateRegistration), 
                 request.LicensePlateNumber);
-
             
             var confirmParkingRequest = ConfirmParkingRequestBuilder.Build(request.ParkingGarageName, licensePlateResult);
             var confirmParkingResponse = await ConfirmParking(confirmParkingRequest, licensePlateResult, context);

@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using ServerlessParking.Application._DependencyInjection;
+using ServerlessParking.Domain;
 using ServerlessParking.Services.LicensePlate;
 
 
@@ -8,18 +10,18 @@ namespace ServerlessParking.Application.LicensePlate
 {
     public static class GetLicensePlateRegistration
     {
-        private static readonly ILicensePlateRegistrationService Service = new LicensePlateRegistrationService();
-
         [FunctionName(nameof(GetLicensePlateRegistration))]
-        public static async Task<Domain.LicensePlateRegistration> Run(
+        public static async Task<LicensePlateRegistration> Run(
             [ActivityTrigger] string licensePlateNumber,
+            [Inject] ILicensePlateRegistrationService licensePlateRegistrationService,
             ILogger logger)
         {
-            logger.LogInformation($"Started {nameof(GetLicensePlateRegistration)} with {licensePlateNumber}.");
+            logger.LogInformation($"Started {nameof(GetLicensePlateRegistration)} for number: {licensePlateNumber}.");
 
-            var licenseplate = await Service.GetAsync(licensePlateNumber);
+            var licensePlateResult = await licensePlateRegistrationService.GetRegistrationForAppointmentAsync(licensePlateNumber) ??
+                                 await licensePlateRegistrationService.GetRegistrationForEmployeeAsync(licensePlateNumber);
 
-            return licenseplate;
+            return licensePlateResult;
         }
     }
 }

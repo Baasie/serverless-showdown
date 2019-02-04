@@ -5,6 +5,8 @@ namespace ServerlessParking.Services.LicensePlate
 {
     public interface ILicensePlateRegistrationService
     {
-        Task<LicensePlateRegistration> GetAsync(string licensePlateNumber);
+        Task<LicensePlateRegistration> GetRegistrationForAppointmentAsync(string licensePlateNumber);
+
+        Task<LicensePlateRegistration> GetRegistrationForEmployeeAsync(string licensePlateNumber);
     }
 }

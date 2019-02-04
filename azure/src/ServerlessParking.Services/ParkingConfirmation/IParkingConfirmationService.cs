@@ -8,7 +8,6 @@ namespace ServerlessParking.Services.ParkingConfirmation
     {
         Task<ConfirmParkingResponse> ConfirmParkingAsync(
             ConfirmParkingRequest request, 
-            DateTime parkingDate, 
             bool hasReservation);
     }
 }

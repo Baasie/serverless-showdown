@@ -39,3 +39,11 @@ OR
 - Run ` az functionapp create --name $functionAppName --storage-account $storageAccountName --consumption-plan-location $locationName --resource-group $resourceGroupName`
 
 More info: https://docs.microsoft.com/en-us/azure/azure-functions/scripts/functions-cli-create-serverless 
+
+### Adding Application Insights to the Function App
+
+https://docs.microsoft.com/en-us/azure/azure-monitor/app/create-new-resource
+
+`az functionapp config appsettings set --name $functionAppName --resource-group $resourceGroupName --settings 'APPINSIGHTS_INSTRUMENTATIONKEY = <Instrumentation Key>'`
+
+

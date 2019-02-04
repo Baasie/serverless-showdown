@@ -8,14 +8,26 @@ namespace ServerlessParking.Services.LicensePlate
     {
         private readonly ILicensePlateRegistrationRepository _repository;
 
-        public LicensePlateRegistrationService(ILicensePlateRegistrationRepository repository = null)
+        public LicensePlateRegistrationService(
+            ILicensePlateRegistrationRepository repository)
         {
-            _repository = repository ?? new LicencePlateRegistrationRepository();
+            _repository = repository;
         }
 
-        public async Task<LicensePlateRegistration> GetAsync(string licensePlateNumber)
+        public async Task<LicensePlateRegistration> GetRegistrationForAppointmentAsync(string licensePlateNumber)
         {
-            var licensePlate = await _repository.GetByNumberAsync(licensePlateNumber);
+            var licensePlate = await _repository.GetByTypeAndNumberAsync(
+                LicensePlateType.Appointment.ToString("G"), 
+                licensePlateNumber);
+
+            return licensePlate;
+        }
+
+        public async Task<LicensePlateRegistration> GetRegistrationForEmployeeAsync(string licensePlateNumber)
+        {
+            var licensePlate = await _repository.GetByTypeAndNumberAsync(
+                LicensePlateType.Employee.ToString("G"),
+                licensePlateNumber);
 
             return licensePlate;
         }
