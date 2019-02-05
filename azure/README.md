@@ -1,10 +1,8 @@
-Azure project of serverless showdown.
+# Azure implementation of the serverless Parking Garage Application
 
-More to come....
+## Running locally
 
-# Running locally
-
-## Prerequisites
+### Prerequisites
 
 - Visual Studio 2017 (or higher)
     - Azure Workload
@@ -14,18 +12,22 @@ OR
 - Visual Studio Code
     - Azure Functions Extension
 
-## Visual Studio
+### Visual Studio
 
-- // TODO
+- Open the `ServerlessParking.sln`
+- Restore & Build the solution.
+- Run the ServerlessParking.Application project.
+    - The local development runtime should start.
+- Use Postman or VS Code with REST Client to trigger the `ParkingGarageCarEntryOrchestration` orchestration function.
 
-# Deployment to Azure
+## Deployment to Azure
 
-## Prerequisites
+### Prerequisites
 
 - You require an Azure account
 - You need to install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest).
 
-## Create a Function App using Powershell
+### Create a Function App using Powershell
 
 - Open Powershell
 - Run `az login` and follow the instructions
@@ -45,5 +47,4 @@ More info: https://docs.microsoft.com/en-us/azure/azure-functions/scripts/functi
 https://docs.microsoft.com/en-us/azure/azure-monitor/app/create-new-resource
 
 `az functionapp config appsettings set --name $functionAppName --resource-group $resourceGroupName --settings 'APPINSIGHTS_INSTRUMENTATIONKEY = <Instrumentation Key>'`
-
 

@@ -1,0 +1,7 @@
+POST http://localhost:7071/api/orchestration/ParkingGarageCarEntryOrchestration
+Content-Type: application/json
+
+{
+    "licensePlateNumber" : "123-ABC",
+    "parkingGarageName" : "Amsterdam"
+}
