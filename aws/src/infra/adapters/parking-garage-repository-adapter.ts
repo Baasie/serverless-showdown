@@ -1,4 +1,4 @@
-import {ParkingGarage} from "../../domain/parking-garage";
+import {ParkingGarage} from "../../domain/ParkingGarage/parking-garage";
 import {DynamoDB} from 'aws-sdk';
 import {PutItemInput, PutItemInputAttributeMap} from 'aws-sdk/clients/dynamodb';
 
@@ -12,7 +12,7 @@ async function resolveTableName(): Promise<string> {
     return process.env.PARKING_GARAGE_TABLE_NAME.toString();
 }
 
-export class ParkingGarageRepository {
+export class ParkingGarageRepositoryAdapter {
 
     public static async saveParkingGarage(parkingGarage: ParkingGarage): Promise<ParkingGarage> {
         const tableName = await resolveTableName();

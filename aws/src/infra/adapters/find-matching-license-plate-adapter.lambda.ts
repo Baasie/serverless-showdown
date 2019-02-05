@@ -1,7 +1,7 @@
 import {Callback, Context} from "aws-lambda";
-import {LicensePlateService} from "./license-plate-service";
-import {LicensePlateType} from "../domain/license-plate-registration";
-import {AppointmentLicensePlateMatched, EmployeeLicensePlateMatched, NoLicensePlateMatched} from "../domain/events";
+import {LicensePlateService} from "../../domain/LicensePlateService/license-plate-service";
+import {LicensePlateType} from "../../domain/LicensePlateService/license-plate-registration";
+import {AppointmentLicensePlateMatched, EmployeeLicensePlateMatched, NoLicensePlateMatched} from "../../domain/LicensePlateService/events";
 
 export function handle(event, context: Context, callback: Callback) {
     let license: string = event.license;
@@ -10,13 +10,13 @@ export function handle(event, context: Context, callback: Callback) {
         licensePlate => {
             switch(licensePlate.type) {
                 case LicensePlateType.APPOINTMENT: {
-                    return callback(null, new AppointmentLicensePlateMatched().toJSON());
+                    return callback(null, new AppointmentLicensePlateMatched(license).toJSON());
                 }
                 case LicensePlateType.EMPLOYEE: {
-                    return callback(null, new EmployeeLicensePlateMatched().toJSON());
+                    return callback(null, new EmployeeLicensePlateMatched(license).toJSON());
                 }
                 default: {
-                    return callback(null, new NoLicensePlateMatched().toJSON());
+                    return callback(null, new NoLicensePlateMatched(license).toJSON());
                 }
             }
         },

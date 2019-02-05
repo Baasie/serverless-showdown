@@ -1,5 +1,5 @@
 import {APIGatewayEvent, Callback, Context} from "aws-lambda";
-import {AppointmentService} from "./appointment-service";
+import {AppointmentService} from "../../domain/ParkingGarage/appointment-service";
 
 export function handle(event, context: Context, callback: Callback) {
 

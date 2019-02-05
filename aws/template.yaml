@@ -35,17 +35,17 @@ Resources:
               "Choices": [
                 {
                   "Variable": "$.type",
-                  "StringEquals": "NoLicensePlateRegistered",
+                  "StringEquals": "NoLicensePlateMatched",
                   "Next": "CallOfficeSupport"
                 },
                 {
                   "Variable": "$.type",
-                  "StringEquals": "AppointmentLicensePlateRegistered",
+                  "StringEquals": "AppointmentLicensePlateMatched",
                   "Next": "ConfirmAppointment"
                 },
                 {
                   "Variable": "$.type",
-                  "StringEquals": "EmployeeLicensePlatedRegistered",
+                  "StringEquals": "EmployeeLicensePlateMatched",
                   "Next": "ConfirmEmployee"
                 }
               ]
@@ -118,7 +118,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       FunctionName: !Sub "pg-findmatchinglicenseplate-${Stage}"
-      Handler: find-matching-license-plate.handle
+      Handler: find-matching-license-plate-adapter.handle
       CodeUri: dist/
       Description: FaaS handler for requesting a car entry
       MemorySize: 128
@@ -133,12 +133,12 @@ Resources:
               Action:
                 - "dynamoDb:Query"
               Resource:
-                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/LicensePlateRepository*'
+                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/LicensePlateRepositoryAdapter*'
   ConfirmAppointment:
     Type: 'AWS::Serverless::Function'
     Properties:
       FunctionName: !Sub "pg-confirmappointment-${Stage}"
-      Handler: confirm-appointment.handle
+      Handler: confirm-appointment-adapter.handle
       CodeUri: dist/
       Description: FaaS handler for requesting a car entry
       MemorySize: 128
@@ -154,12 +154,12 @@ Resources:
                 - "dynamoDb:PutItem"
                 - "dynamoDb:Query"
               Resource:
-                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepository*'
+                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepositoryAdapter*'
   ConfirmEmployee:
     Type: 'AWS::Serverless::Function'
     Properties:
       FunctionName: !Sub "pg-confirmemployee-${Stage}"
-      Handler: confirm-employee.handle
+      Handler: confirm-employee-adapter.handle
       CodeUri: dist/
       Description: FaaS handler for requesting a car entry
       MemorySize: 128
@@ -175,12 +175,12 @@ Resources:
                 - "dynamoDb:PutItem"
                 - "dynamoDb:Query"
               Resource:
-                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepository*'
+                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepositoryAdapter*'
   ContactNotification:
     Type: 'AWS::Serverless::Function'
     Properties:
       FunctionName: !Sub "pg-contactnotification-${Stage}"
-      Handler: contact-notification.handle
+      Handler: contact-notification-adapter.handle
       CodeUri: dist/
       Description: FaaS handler for requesting a car entry
       MemorySize: 128
@@ -189,7 +189,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       FunctionName: !Sub "pg-garagegateway-${Stage}"
-      Handler: garage-gateway.handle
+      Handler: garage-gateway-adapter.handle
       CodeUri: dist/
       Description: FaaS handler for requesting a car entry
       MemorySize: 128
@@ -197,7 +197,7 @@ Resources:
   LicensePlateRepository:
     Type: 'AWS::DynamoDB::Table'
     Properties:
-      TableName: !Sub "LicensePlateRepository-${Stage}"
+      TableName: !Sub "LicensePlateRepositoryAdapter-${Stage}"
       AttributeDefinitions:
         - AttributeName: license
           AttributeType: S
@@ -210,7 +210,7 @@ Resources:
   ParkingGarageRepository:
     Type: 'AWS::DynamoDB::Table'
     Properties:
-      TableName: !Sub "ParkingGarageRepository-${Stage}"
+      TableName: !Sub "ParkingGarageRepositoryAdapter-${Stage}"
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S

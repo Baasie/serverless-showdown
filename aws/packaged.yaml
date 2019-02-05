@@ -17,7 +17,7 @@ Parameters:
 Resources:
   ConfirmAppointment:
     Properties:
-      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      CodeUri: s3://baasie.fs.release/kb-local/d94fb8fde062fbe9bc68790b6b921954
       Description: FaaS handler for requesting a car entry
       Environment:
         Variables:
@@ -25,7 +25,7 @@ Resources:
             Ref: ParkingGarageRepository
       FunctionName:
         Fn::Sub: pg-confirmappointment-${Stage}
-      Handler: confirm-appointment.handle
+      Handler: confirm-appointment-adapter.handle
       MemorySize: 128
       Policies:
       - Statement:
@@ -34,13 +34,13 @@ Resources:
           - dynamoDb:Query
           Effect: Allow
           Resource:
-            Fn::Sub: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepository*
+            Fn::Sub: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepositoryAdapter*
         Version: '2012-10-17'
       ReservedConcurrentExecutions: 20
     Type: AWS::Serverless::Function
   ConfirmEmployee:
     Properties:
-      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      CodeUri: s3://baasie.fs.release/kb-local/d94fb8fde062fbe9bc68790b6b921954
       Description: FaaS handler for requesting a car entry
       Environment:
         Variables:
@@ -48,7 +48,7 @@ Resources:
             Ref: ParkingGarageRepository
       FunctionName:
         Fn::Sub: pg-confirmemployee-${Stage}
-      Handler: confirm-employee.handle
+      Handler: confirm-employee-adapter.handle
       MemorySize: 128
       Policies:
       - Statement:
@@ -57,23 +57,23 @@ Resources:
           - dynamoDb:Query
           Effect: Allow
           Resource:
-            Fn::Sub: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepository*
+            Fn::Sub: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ParkingGarageRepositoryAdapter*
         Version: '2012-10-17'
       ReservedConcurrentExecutions: 20
     Type: AWS::Serverless::Function
   ContactNotification:
     Properties:
-      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      CodeUri: s3://baasie.fs.release/kb-local/d94fb8fde062fbe9bc68790b6b921954
       Description: FaaS handler for requesting a car entry
       FunctionName:
         Fn::Sub: pg-contactnotification-${Stage}
-      Handler: contact-notification.handle
+      Handler: contact-notification-adapter.handle
       MemorySize: 128
       ReservedConcurrentExecutions: 20
     Type: AWS::Serverless::Function
   FindMatchingLicensePlate:
     Properties:
-      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      CodeUri: s3://baasie.fs.release/kb-local/d94fb8fde062fbe9bc68790b6b921954
       Description: FaaS handler for requesting a car entry
       Environment:
         Variables:
@@ -81,7 +81,7 @@ Resources:
             Ref: LicensePlateRepository
       FunctionName:
         Fn::Sub: pg-findmatchinglicenseplate-${Stage}
-      Handler: find-matching-license-plate.handle
+      Handler: find-matching-license-plate-adapter.handle
       MemorySize: 128
       Policies:
       - Statement:
@@ -89,17 +89,17 @@ Resources:
           - dynamoDb:Query
           Effect: Allow
           Resource:
-            Fn::Sub: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/LicensePlateRepository*
+            Fn::Sub: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/LicensePlateRepositoryAdapter*
         Version: '2012-10-17'
       ReservedConcurrentExecutions: 20
     Type: AWS::Serverless::Function
   GarageGateway:
     Properties:
-      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      CodeUri: s3://baasie.fs.release/kb-local/d94fb8fde062fbe9bc68790b6b921954
       Description: FaaS handler for requesting a car entry
       FunctionName:
         Fn::Sub: pg-garagegateway-${Stage}
-      Handler: garage-gateway.handle
+      Handler: garage-gateway-adapter.handle
       MemorySize: 128
       ReservedConcurrentExecutions: 20
     Type: AWS::Serverless::Function
@@ -115,7 +115,7 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
       TableName:
-        Fn::Sub: LicensePlateRepository-${Stage}
+        Fn::Sub: LicensePlateRepositoryAdapter-${Stage}
     Type: AWS::DynamoDB::Table
   ParkingAccessStateMachine:
     Properties:
@@ -125,11 +125,11 @@ Resources:
           : {\n      \"Type\": \"Task\",\n      \"Resource\": \"${FindMatchingLicensePlate.Arn}\"\
           ,\n      \"Next\": \"HandleParking\"\n    },\n    \"HandleParking\": {\n\
           \      \"Type\": \"Choice\",\n      \"Choices\": [\n        {\n        \
-          \  \"Variable\": \"$.type\",\n          \"StringEquals\": \"NoLicensePlateRegistered\"\
+          \  \"Variable\": \"$.type\",\n          \"StringEquals\": \"NoLicensePlateMatched\"\
           ,\n          \"Next\": \"CallOfficeSupport\"\n        },\n        {\n  \
-          \        \"Variable\": \"$.type\",\n          \"StringEquals\": \"AppointmentLicensePlateRegistered\"\
+          \        \"Variable\": \"$.type\",\n          \"StringEquals\": \"AppointmentLicensePlateMatched\"\
           ,\n          \"Next\": \"ConfirmAppointment\"\n        },\n        {\n \
-          \         \"Variable\": \"$.type\",\n          \"StringEquals\": \"EmployeeLicensePlatedRegistered\"\
+          \         \"Variable\": \"$.type\",\n          \"StringEquals\": \"EmployeeLicensePlateMatched\"\
           ,\n          \"Next\": \"ConfirmEmployee\"\n        }\n      ]\n    },\n\
           \    \"ConfirmAppointment\": {\n      \"Type\": \"Task\",\n      \"Resource\"\
           : \"${ConfirmAppointment.Arn}\",\n      \"Next\": \"HandleAppointment\"\n\
@@ -167,11 +167,11 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
       TableName:
-        Fn::Sub: ParkingGarageRepository-${Stage}
+        Fn::Sub: ParkingGarageRepositoryAdapter-${Stage}
     Type: AWS::DynamoDB::Table
   RequestCarEntry:
     Properties:
-      CodeUri: s3://baasie.fs.release/kb-local/6c8d9eeabec7f8b33fac49e273c5a858
+      CodeUri: s3://baasie.fs.release/kb-local/d94fb8fde062fbe9bc68790b6b921954
       Description: FaaS handler for requesting a car entry
       Events:
         PostCarRequest:

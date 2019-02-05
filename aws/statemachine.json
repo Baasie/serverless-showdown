@@ -13,17 +13,17 @@
       "Choices": [
         {
           "Variable": "$.type",
-          "StringEquals": "NoLicensePlateRegistered",
+          "StringEquals": "NoLicensePlateMatched",
           "Next": "CallOfficeSupport"
         },
         {
           "Variable": "$.type",
-          "StringEquals": "AppointmentLicensePlateRegistered",
+          "StringEquals": "AppointmentLicensePlateMatched",
           "Next": "ConfirmAppointment"
         },
         {
           "Variable": "$.type",
-          "StringEquals": "EmployeeLicensePlatedRegistered",
+          "StringEquals": "EmployeeLicensePlateMatched",
           "Next": "ConfirmEmployee"
         }
       ]

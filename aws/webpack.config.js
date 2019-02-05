@@ -1,6 +1,5 @@
 // Import path for resolving file paths
 const path = require('path');
-const fs = require("fs");
 
 module.exports = {
     target: 'node', // in order to ignore built-in modules like path, fs, etc.
@@ -12,12 +11,12 @@ module.exports = {
     // Specify the entry point for our lambda's.
     // entry: entry(entry.basePath('src'), 'src/**/*.lambda.ts'),
     entry: {
-        'request-car-entry': './src/adapter/api/request-car-entry.lambda.ts',
-        'confirm-appointment': './src/application/confirm-appointment.lambda.ts',
-        'confirm-employee': './src/application/confirm-employee.lambda.ts',
-        'find-matching-license-plate': './src/application/find-matching-license-plate.lambda.ts',
-        'contact-notification': './src/adapter/contact-notification/contact-notification.lambda.ts',
-        'garage-gateway': './src/adapter/garage-gateway/garage-gateway.lambda.ts'
+        'request-car-entry': './src/infra/api/request-car-entry.lambda.ts',
+        'confirm-appointment-adapter': './src/infra/adapters/confirm-appointment-adapter.lambda.ts',
+        'confirm-employee-adapter': './src/infra/adapters/confirm-employee-adapter.lambda.ts',
+        'find-matching-license-plate-adapter': './src/infra/adapters/find-matching-license-plate-adapter.lambda.ts',
+        'contact-notification-adapter': './src/infra/adapters/contact-notification-adapter.lambda.ts',
+        'garage-gateway-adapter': './src/infra/adapters/garage-gateway-adapter.lambda.ts'
     },
 
     resolve: {
